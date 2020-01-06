@@ -1,8 +1,12 @@
 const fs = require('fs');
 const Discord = require('discord.js');
 const Attachment = require('discord.js');
-const { prefix, token } = require('./config.json');
-const cooldowns = new Discord.Collection();
+//const { prefix, token } = require('./config.json');
+
+const token = process.env.token;
+const prefix = process.env.prefix;
+
+//const cooldowns = new Discord.Collection();
 
 
 const client = new Discord.Client();
