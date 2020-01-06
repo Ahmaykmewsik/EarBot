@@ -8,6 +8,11 @@ module.exports = {
 	guildonly: true,
 	execute(client, message, args) {
 
+		if (!message.member.hasPermission('ADMINISTRATOR')) {
+			message.channel.send("Hey you no do that.");
+			return;
+		}
+
 		const earLogChannelID = args[0];
 		client.votes.set("EAR_LOG", earLogChannelID);
 

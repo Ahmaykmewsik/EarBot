@@ -32,7 +32,7 @@ for (const file of commandFiles) {
 
 
 client.on('ready', () => {
-	console.log('Ready!');
+	console.log('EarBot Ready!');
 });
 
 client.on('message', message => {
@@ -42,6 +42,8 @@ client.on('message', message => {
 	const vaultChannelID = client.votes.get("VAULT");//Get vault channel;
 	const guildID = "660306459397193728";//Get Guild ID
 
+
+	///DM VAULT---------------------------------------------------------------------------
 
 	if (message.channel.type === "dm") {
 
@@ -74,24 +76,31 @@ client.on('message', message => {
 		return;
 	}
 
+	///DM VAULT---------------------------------------------------------------------------
+
 	var earLogChannelID = client.votes.get("EAR_LOG");
 
 	if (message.channel.name[0] == "p") {
+
+		if (earLogChannelID == undefined) {
+			message.channel.send("The GM needs to setup the Ear Log channel!");
+			return
+		}
+
 		//Copy to Ear Log
-		if (!message.content.includes("-purge ")) {
-			client.channels.get(earLogChannelID).send("**[" + message.channel.name + "] " + message.author.username + "**: " + message.content);
+		if ((!message.content.includes("-purge ")) && (message.content[0] != token)) {
+			client.channels.get(earLogChannelID).send("`[" + message.channel.name.toUpperCase() + "]` **" + message.author.username + ":** " + message.content);
 		}
 
 		//Lock it GM locks it
-		if (message.content.toLowerCase() == "lock") {
+		if ((message.content.toLowerCase() == "lock") && (message.member.hasPermission('ADMINISTRATOR'))) {
+			console.log("LOCK")
 			message.channel.overwritePermissions(message.channel.guild.defaultRole, { SEND_MESSAGES: false });
 		}
-
-		return;
-	}
+	} 
 
 	
-	//commands
+	///COMMANDS ---------------------------------------------------------------------------
 	if (!message.content.startsWith(prefix) || message.author.bot) return;
 
 	const args = message.content.slice(prefix.length).split(/ +/);

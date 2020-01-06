@@ -1,0 +1,24 @@
+{
+  "name": "earbot",
+  "version": "1.0.0",
+  "description": "A Discord Bot to run the Mystery Game",
+  "main": "index.js",
+  "scripts": {
+    "test": "!ping"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ahmaykmewsik/EarBot.git"
+  },
+  "keywords": [
+    "discord",
+    "game",
+    "roleplay"
+  ],
+  "author": "Ahmaykmewsik",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Ahmaykmewsik/EarBot/issues"
+  },
+  "homepage": "https://github.com/Ahmaykmewsik/EarBot#readme"
+}
