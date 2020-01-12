@@ -94,7 +94,7 @@ client.on('message', message => {
 		}
 
 		//Copy to Ear Log
-		if ((!message.content.includes("-purge ")) && (message.content[0] != token)) {
+		if (message.content[0] != token) {
 			client.channels.get(earLogChannelID).send("`[" + message.channel.name.toUpperCase() + "]` **" + message.author.username + ":** " + message.content);
 		}
 
