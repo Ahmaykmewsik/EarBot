@@ -43,7 +43,7 @@ client.on('ready', () => {
 
 client.on('message', message => {
 
-	//if (message.author.bot) return; // Ignore bots.
+	if (message.author.id == 660290238412881930) return; // Ignore self.
 
 	const vaultChannelID = client.votes.get("VAULT");//Get vault channel;
 	const guildID = "660306459397193728";//Get Guild ID
