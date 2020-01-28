@@ -36,6 +36,19 @@ for (const file of commandFiles) {
 	client.commands.set(command.name, command);
 }
 
+//Something I coped from online that takes strings and turns them into one of these colors.
+String.prototype.toColor = function() {
+	var colors = ["#e51c23", "#e91e63", "#9c27b0", "#673ab7", "#3f51b5", "#5677fc", "#03a9f4", "#00bcd4", "#009688", "#259b24", "#8bc34a", "#afb42b", "#ff9800", "#ff5722", "#795548", "#607d8b"]
+	
+	var hash = 0;
+	if (this.length === 0) return hash;
+	for (var i = 0; i < this.length; i++) {
+		hash = this.charCodeAt(i) + ((hash << 5) - hash);
+		hash = hash & hash;
+	}
+	hash = ((hash % colors.length) + colors.length) % colors.length;
+	return colors[hash];
+}
 
 client.on('ready', () => {
 	console.log('EarBot Ready!');
@@ -82,7 +95,7 @@ client.on('message', message => {
 		return;
 	}
 
-	///DM VAULT---------------------------------------------------------------------------
+	///EAR LOG---------------------------------------------------------------------------
 
 	var earLogChannelID = client.votes.get("EAR_LOG");
 
@@ -93,12 +106,29 @@ client.on('message', message => {
 			return
 		}
 
+		var areaname = message.channel.name.split("-");
+		areaname.shift();
+		areaname = areaname.join("");
+
+		console.log(areaname);
+
 		//Copy to Ear Log
 		if (!message.content.startsWith(prefix)) {
-			client.channels.get(earLogChannelID).send("`[" + message.channel.name.toUpperCase() + "]` **" + message.author.username + ":** " + message.content);
+			const earLogEmbed = new Discord.RichEmbed()
+				.setColor(areaname.toColor())
+				.setAuthor(message.channel.name + "\n" + message.author.username.toUpperCase() + ": " + message.content, message.author.avatarURL )
+
+
+			if (message.attachments.array().length != 0) {
+				earLogEmbed.setImage(message.attachments.array()[0].url)
+			}
+
+			client.channels.get(earLogChannelID).send(earLogEmbed);
 		}
 
-		//Lock it GM locks it
+
+
+		//Lock it GM locks the channel
 		if ((message.content.toLowerCase() == "lock") && (message.member.hasPermission('ADMINISTRATOR'))) {
 			console.log("LOCK")
 			message.channel.overwritePermissions(message.channel.guild.defaultRole, { SEND_MESSAGES: false });
