@@ -106,18 +106,17 @@ client.on('message', message => {
 			return
 		}
 
-		var areaname = message.channel.name.split("-");
-		areaname.shift();
-		areaname = areaname.join("");
-
-		console.log(areaname);
-
 		//Copy to Ear Log
 		if (!message.content.startsWith(prefix)) {
+
+			var areaname = message.channel.name.split("-");
+			areaname.shift();
+			areaname = areaname.join("");
+
 			const earLogEmbed = new Discord.RichEmbed()
 				.setColor(areaname.toColor())
-				.setAuthor(message.channel.name + "\n" + message.author.username.toUpperCase() + ": " + message.content, message.author.avatarURL )
-
+				.setAuthor(message.channel.name, message.author.avatarURL)
+				.setDescription("**" + message.author.username.toUpperCase() + "** `" + message.member.nickname + "`: " + message.content)
 
 			if (message.attachments.array().length != 0) {
 				earLogEmbed.setImage(message.attachments.array()[0].url)
