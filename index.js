@@ -97,34 +97,33 @@ client.on('message', message => {
 
 	///EAR LOG---------------------------------------------------------------------------
 
-	var earLogChannelID = client.votes.get("EAR_LOG");
+	// var earLogChannelID = client.votes.get("EAR_LOG");
 
 	if (message.channel.name[0] == "p") {
 
-		if (earLogChannelID == undefined) {
-			message.channel.send("The GM needs to setup the Ear Log channel!");
-			return
-		}
+		// if (earLogChannelID == undefined) {
+		// 	message.channel.send("The GM needs to setup the Ear Log channel!");
+		// 	return
+		// }
 
-		//Copy to Ear Log
-		if (!message.content.startsWith(prefix)) {
+		// //Copy to Ear Log
+		// if (!message.content.startsWith(prefix)) {
 
-			var areaname = message.channel.name.split("-");
-			areaname.shift();
-			areaname = areaname.join("");
+		// 	var areaname = message.channel.name.split("-");
+		// 	areaname.shift();
+		// 	areaname = areaname.join("");
 
-			const earLogEmbed = new Discord.RichEmbed()
-				.setColor(areaname.toColor())
-				.setAuthor(message.channel.name, message.author.avatarURL)
-				.setDescription("**" + message.author.username.toUpperCase() + "** `" + message.member.nickname + "`: " + message.content)
+		// 	const earLogEmbed = new Discord.RichEmbed()
+		// 		.setColor(areaname.toColor())
+		// 		.setAuthor(message.channel.name, message.author.avatarURL)
+		// 		.setDescription("**" + message.author.username.toUpperCase() + "** `" + message.member.nickname + "`: " + message.content)
 
-			if (message.attachments.array().length != 0) {
-				earLogEmbed.setImage(message.attachments.array()[0].url)
-			}
+		// 	if (message.attachments.array().length != 0) {
+		// 		earLogEmbed.setImage(message.attachments.array()[0].url)
+		// 	}
 
-			client.channels.get(earLogChannelID).send(earLogEmbed);
-		}
-
+		// 	client.channels.get(earLogChannelID).send(earLogEmbed);
+		// }
 
 
 		//Lock it GM locks the channel
