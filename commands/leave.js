@@ -1,7 +1,7 @@
 module.exports = {
 	name: 'leave',
 	description: 'leave',
-	format: "!leav",
+	format: "!leave",
 	guildonly: true,
 	execute(client, message, args) {
 

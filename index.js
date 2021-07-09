@@ -36,104 +36,53 @@ for (const file of commandFiles) {
 	client.commands.set(command.name, command);
 }
 
-//Something I coped from online that takes strings and turns them into one of these colors.
-String.prototype.toColor = function() {
-	var colors = ["#e51c23", "#e91e63", "#9c27b0", "#673ab7", "#3f51b5", "#5677fc", "#03a9f4", "#00bcd4", "#009688", "#259b24", "#8bc34a", "#afb42b", "#ff9800", "#ff5722", "#795548", "#607d8b"]
-	
-	var hash = 0;
-	if (this.length === 0) return hash;
-	for (var i = 0; i < this.length; i++) {
-		hash = this.charCodeAt(i) + ((hash << 5) - hash);
-		hash = hash & hash;
-	}
-	hash = ((hash % colors.length) + colors.length) % colors.length;
-	return colors[hash];
-}
-
 client.on('ready', () => {
 	console.log('EarBot Ready!');
 });
 
-client.on('message', message => {
+client.on('message', async message => {
 
 	if (message.author.id == 660290238412881930) return; // Ignore self.
 
 	const vaultChannelID = client.votes.get("VAULT");//Get vault channel;
 	const guildID = "660306459397193728";//Get Guild ID
 
-
 	///DM VAULT---------------------------------------------------------------------------
 
-	if (message.channel.type === "dm") {
+	if (message.channel.type === "dm" && !vaultChannelID)
+		return message.author.send("The GM needs to setup the vault channel.");
 
-		if (vaultChannelID != undefined) {
-			//Color and send message
-			const user = client.guilds.get(guildID).fetchMember(message.author).then((user) => {
-				var color = user.displayHexColor;
+	if (message.channel.type === "dm" && vaultChannelID) {
 
-				//Put the message in a cute little embed
-				const embed = new Discord.RichEmbed()
-					.setDescription(message.content)
-					.setColor(color)
-					.setAuthor(message.author.username, message.author.avatarURL )
+		try {
+			//Color in the hub server
+			const user = await client.guilds.cache.get(guildID).members.fetch(message.author);
+			var color = user.displayHexColor;
 
-				//Add Image if it exists
-				if (message.attachments.array().length != 0) {
-					embed.setImage(message.attachments.array()[0].url)
-				}
+			//Put the message in a cute little embed
+			const embed = new Discord.MessageEmbed()
+				.setDescription(message.content)
+				.setColor(color)
+				.setAuthor(message.author.username, message.author.avatarURL())
 
-				client.channels.get(vaultChannelID).send(embed);
-			})		
+			//Add Image if it exists
+			if (message.attachments.array().length != 0) {
+				embed.setImage(message.attachments.array()[0].url)
+			}
 
-			message.author.send("Sent to vault.").then(msg => {
-				 msg.delete(5000);
- 				 });
+			//Send it!
+			await client.channels.cache.get(vaultChannelID).send(embed);
+
+			//Nofity
+			let msg = await message.author.send("Sent to vault.");
+			await msg.delete({ timeout: 5000 });
 		}
-		else {
-			message.author.send("The GM needs to setup the vault channel.");
+		catch (error) {
+			console.error(error);
+			return message.author.send(`Huh? Something went wrong with that! Contact your GM or Ahmayk. \`\`\`${error}\`\`\``);
 		}
-		return;
 	}
 
-	///EAR LOG---------------------------------------------------------------------------
-
-	// var earLogChannelID = client.votes.get("EAR_LOG");
-
-	if (message.channel.name[0] == "p") {
-
-	// 	if (earLogChannelID == undefined) {
-	// 		message.channel.send("The GM needs to setup the Ear Log channel!");
-	// 		return
-	// 	}
-
-	// 	//Copy to Ear Log
-	// 	if (!message.content.startsWith(prefix)) {
-
-	// 		var areaname = message.channel.name.split("-");
-	// 		areaname.shift();
-	// 		areaname = areaname.join("");
-
-	// 		const earLogEmbed = new Discord.RichEmbed()
-	// 			.setColor(areaname.toColor())
-	// 			.setAuthor(message.channel.name, message.author.avatarURL)
-	// 			.setDescription("**" + message.author.username.toUpperCase() + "** `" + message.member.nickname + "`: " + message.content)
-
-	// 		if (message.attachments.array().length != 0) {
-	// 			earLogEmbed.setImage(message.attachments.array()[0].url)
-	// 		}
-
-	// 		client.channels.get(earLogChannelID).send(earLogEmbed);
-	// 	}
-
-
-		//Lock it GM locks the channel
-		if ((message.content.toLowerCase() == "lock") && (message.member.hasPermission('ADMINISTRATOR'))) {
-			console.log("LOCK")
-			message.channel.overwritePermissions(message.channel.guild.defaultRole, { SEND_MESSAGES: false });
-		}
-	} 
-
-	
 	///COMMANDS ---------------------------------------------------------------------------
 	if (!message.content.startsWith(prefix) || message.author.bot) return;
 
@@ -155,11 +104,11 @@ client.on('message', message => {
 	}
 
 	try {
-	    command.execute(client, message, args);
+		command.execute(client, message, args);
 	}
 	catch (error) {
-	    console.error(error);
-	    message.reply('there was an error trying to execute that command!');
+		console.error(error);
+		message.reply('There was an error trying to execute that command!');
 	}
 });
 

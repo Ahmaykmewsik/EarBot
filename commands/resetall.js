@@ -3,7 +3,7 @@ const Enmap = require("enmap");
 
 module.exports = {
 	name: 'resetall',
-	description: 'Releases gm control',
+	description: 'Clears all data stored in the bot.',
 	format: "!resetall",
 	guildonly: true,
 	execute(client, message, args) {
