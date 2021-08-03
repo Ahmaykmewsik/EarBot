@@ -1,6 +1,3 @@
-
-const Enmap = require("enmap");
-
 module.exports = {
 	name: 'vault',
 	description: 'Sets the vault channel',
@@ -10,12 +7,12 @@ module.exports = {
 		let vaultChannelID = args[0];
 		if (!vaultChannelID)
 			vaultChannelID = message.channel.id;
-		client.votes.set("VAULT", vaultChannelID);
+
+		client.setVaultID.run({id: 0, guildID: message.guild.id, vaultID: vaultChannelID});
 
 		const vaultChannelName = client.channels.cache.get(vaultChannelID).toString();
-
-		client.channels.cache.get(vaultChannelID).send("The vault is locked.");
-		let msg = await message.channel.send("Vault set to: " + vaultChannelName);
+		let msg = await client.channels.cache.get(vaultChannelID).send("The vault is locked.");
 		msg.pin();
+		message.channel.send("Vault set to: " + vaultChannelName);
 	}
 };
