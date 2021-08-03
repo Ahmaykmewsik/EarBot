@@ -23,7 +23,7 @@ module.exports = {
 		message.channel.send('Delete all data? (y or n).').then(() => {
 			const filter = m => message.author.id === m.author.id;
 		
-			message.channel.awaitMessages(filter, { time: 60000, maxMatches: 1, errors: ['time'] })
+			message.channel.awaitMessages(filter, { time: 60000, max: 1, errors: ['time'] })
 				.then(messages => {
 					if (messages.first().content == "y") {
 

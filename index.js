@@ -71,10 +71,11 @@ client.on('message', async message => {
 			}
 
 			//Send it!
-			await client.channels.cache.get(vaultChannelID).send(embed);
-
+			let vaultChannel = client.channels.cache.get(vaultChannelID);
+			await vaultChannel.send(embed);
+			
 			//Nofity
-			let msg = await message.author.send("Sent to vault.");
+			let msg = await message.author.send(`Sent to vault in ${vaultChannel.guild.name}`);
 			await msg.delete({ timeout: 5000 });
 		}
 		catch (error) {
