@@ -8,9 +8,22 @@ require('dotenv').config();
 const token = process.env.token;
 const prefix = process.env.prefix;
 
+const { Client, Intents } = require('discord.js');
+
 //const cooldowns = new Discord.Collection();
 
-const client = new Discord.Client();
+const myIntents = new Intents();
+myIntents.add(
+	Intents.FLAGS.GUILDS,
+	Intents.FLAGS.GUILD_MEMBERS,
+	Intents.FLAGS.GUILD_WEBHOOKS,
+	Intents.FLAGS.GUILD_PRESENCES,
+	Intents.FLAGS.GUILD_MESSAGES,
+	Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+	Intents.FLAGS.DIRECT_MESSAGES
+);
+
+let client = new Client({ intents: myIntents, partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
 client.commands = new Discord.Collection();
 
 const SQLite = require("better-sqlite3");
@@ -76,7 +89,7 @@ client.on('ready', () => {
 	console.log('EarBot Ready!');
 });
 
-client.on('message', async message => {
+client.on('messageCreate', async message => {
 
 	if (message.author.id == 660290238412881930) return; // Ignore self.
 
@@ -85,10 +98,10 @@ client.on('message', async message => {
 
 	///DM VAULT---------------------------------------------------------------------------
 
-	if (message.channel.type === "dm" && !vaultChannelData)
+	if (message.channel.type === "DM" && !vaultChannelData)
 		return message.author.send(":x: The GM needs to setup the vault channel.");
 
-	if (message.channel.type === "dm" && vaultChannelData) {
+	if (message.channel.type === "DM" && vaultChannelData) {
 
 		try {
 			//Color in the hub server
@@ -97,29 +110,26 @@ client.on('message', async message => {
 
 			let avatarURL = await UtilityFunctions.GetStoredUserURL(client, message, user.id);
 
+			let imageURL = (message.attachments.size) ? message.attachments.first().url : "";
+
 			//Put the message in a cute little embed
 			const embed = new Discord.MessageEmbed()
 				.setDescription(message.content)
 				.setColor(color)
 				.setAuthor(message.author.username, avatarURL)
+				.setImage(imageURL)
 
-			//Add Image if it exists as attachment
-			if (message.attachments.array().length != 0) {
-				embed.setImage(message.attachments.array()[0].url)
-			}
-
-			let noImageAttachments = UtilityFunctions.FilterImages(message.attachments.array());
+			let noImageAttachments = UtilityFunctions.FilterImages(message.attachments);
 
 			//Send it!
 			let vaultChannel = client.channels.cache.get(vaultChannelData.vaultID);
 
-			await vaultChannel.send({embed: embed, files: noImageAttachments});
-
-			
+			await vaultChannel.send({embeds: [embed], files: noImageAttachments});
 
 			//Nofity
-			let msg = await message.author.send(`Sent to vault in **${vaultChannel.guild.name}**`);
-			await msg.delete({ timeout: 5000 });
+			let msg = await message.author.send(`*Sent to vault in **${vaultChannel.guild.name}***`);
+			await UtilityFunctions.sleep(5000);
+			await msg.delete();
 		}
 		catch (error) {
 			console.error(error);

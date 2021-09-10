@@ -4,6 +4,11 @@ module.exports = {
 	guildonly: true,
 	async execute(client, message, args) {
 
+		if (!message.member.permissions.has('ADMINISTRATOR')) {
+			message.channel.send("Hey, you no do that.");
+			return;
+		}
+
 		let vaultChannelID = args[0];
 		if (!vaultChannelID)
 			vaultChannelID = message.channel.id;

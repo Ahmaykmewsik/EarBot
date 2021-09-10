@@ -22,9 +22,8 @@
   },
   "homepage": "https://github.com/Ahmaykmewsik/EarBot#readme",
   "dependencies": {
-    "better-sqlite3": "^5.4.3",
-    "discord.js": "^12.5.3",
-    "dotenv": "^8.6.0",
-    "enmap": "^5.8.6"
+    "better-sqlite3": "^7.4.3",
+    "discord.js": "^13.1.0",
+    "dotenv": "^8.6.0"
   }
 }

@@ -1,5 +1,4 @@
 
-const Enmap = require("enmap");
 
 module.exports = {
 	name: 'resetall',
@@ -13,7 +12,9 @@ module.exports = {
 
 		///*
 
-		if (!message.member.hasPermission('ADMINISTRATOR')) {
+		return message.channel.send("This command is broken. Ahmayk will fix it later.");
+
+		if (!message.member.permissions.has('ADMINISTRATOR')) {
 			message.channel.send("Don't you dare.");
 			return;
 		}

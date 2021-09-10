@@ -3,6 +3,6 @@ node_modules/
 package-lock.json
 config.json
 .env
-data/enmap.sqlite-wal
-data/enmap.sqlite-shm
-data/enmap.sqlite
+data.sqlite
+data.sqlite-shm
+data.sqlite-wal

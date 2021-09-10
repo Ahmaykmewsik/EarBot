@@ -1,5 +1,5 @@
-//const SpyManagement = require('./SpyManagement');
 const fetch = require("node-fetch");
+const Discord = require('discord.js');
 
 module.exports = {
 
@@ -25,11 +25,12 @@ module.exports = {
     //Reuploads an image of a player's avatar as a message so that discord is forced to keep it :)
     async UpdateStoredAvatarURL(client, message, user) {
 
-        const discordAvatarURL = await user.displayAvatarURL({ format: `webp`, size: 64 });
+        const discordAvatarURL = await user.displayAvatarURL({ format: `webp`, size: 512 });
         const response = await fetch(discordAvatarURL);
         const arrayBuffer = await response.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
-        const avatarMessage = await message.channel.send(`:desktop: NEW AVATAR FOR: ${user.username}`, { files: [{ attachment: buffer }] });
+        const attachment = new Discord.MessageAttachment(buffer);
+        const avatarMessage = await message.channel.send({ content: `:desktop: NEW AVATAR FOR: ${user.username}`, files: [attachment] });
         const newURL = [...avatarMessage.attachments.values()][0].proxyURL;
 
         client.setAvatar.run({

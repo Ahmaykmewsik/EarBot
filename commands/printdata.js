@@ -1,5 +1,4 @@
 
-const Enmap = require("enmap");
 
 module.exports = {
 	name: 'printdata',
@@ -8,10 +7,11 @@ module.exports = {
 	guildonly: true,
 	execute(client, message, args) {
 
-		if (!message.member.hasPermission('ADMINISTRATOR')) {
-			message.channel.send("The DATA is not for you.");
-			return;
-		}
+		return message.channel.send("This command is depricated.");
+
+		if (!message.member.permissions.has('ADMINISTRATOR')) 
+			return message.channel.send("The DATA is not for you.");
+
 
 		keyArray = client.votes.indexes
         const dataMap = client.votes.fetch(keyArray);
