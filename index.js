@@ -108,7 +108,9 @@ client.on('messageCreate', async message => {
 			const user = await client.guilds.cache.get(guildID).members.fetch(message.author);
 			var color = user.displayHexColor;
 
-			let avatarURL = await UtilityFunctions.GetStoredUserURL(client, message, user.id);
+			let vaultChannel = client.channels.cache.get(vaultChannelData.vaultID);
+
+			let avatarURL = await UtilityFunctions.GetStoredUserURL(client, message, user.id, vaultChannel.guild);
 
 			let imageURL = (message.attachments.size) ? message.attachments.first().url : "";
 
@@ -122,7 +124,7 @@ client.on('messageCreate', async message => {
 			let noImageAttachments = UtilityFunctions.FilterImages(message.attachments);
 
 			//Send it!
-			let vaultChannel = client.channels.cache.get(vaultChannelData.vaultID);
+			
 
 			await vaultChannel.send({embeds: [embed], files: noImageAttachments});
 

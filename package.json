@@ -23,7 +23,7 @@
   "homepage": "https://github.com/Ahmaykmewsik/EarBot#readme",
   "dependencies": {
     "better-sqlite3": "^7.4.3",
-    "discord.js": "^13.1.0",
+    "discord.js": "^13.3.1",
     "dotenv": "^8.6.0"
   }
 }
