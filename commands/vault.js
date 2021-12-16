@@ -4,7 +4,7 @@ module.exports = {
 	guildonly: true,
 	async execute(client, message, args) {
 
-		if (!message.member.permissions.has('ADMINISTRATOR')) {
+		if (!message.member || !message.member.permissions.has('ADMINISTRATOR')) {
 			message.channel.send("Hey, you no do that.");
 			return;
 		}

@@ -5,8 +5,18 @@ require('dotenv').config();
 
 //const { prefix, token } = require('./config.json');
 
-const token = process.env.token;
-const prefix = process.env.prefix;
+let isTurboEarBot = false;
+//Toggle this to launch turbo instance
+// isTurboEarBot = true;
+
+const token = (isTurboEarBot) ? 
+	process.env.tokenTurboEarBot : process.env.tokenEarBot;
+
+const prefix = (isTurboEarBot) ? 
+	process.env.prefixTurbo : process.env.prefix;
+
+const loginMessage = (isTurboEarBot) ? 
+	"TurboEarbot Ready!" : "EarBot Ready!";
 
 const { Client, Intents } = require('discord.js');
 
@@ -16,10 +26,8 @@ const myIntents = new Intents();
 myIntents.add(
 	Intents.FLAGS.GUILDS,
 	Intents.FLAGS.GUILD_MEMBERS,
-	Intents.FLAGS.GUILD_WEBHOOKS,
 	Intents.FLAGS.GUILD_PRESENCES,
 	Intents.FLAGS.GUILD_MESSAGES,
-	Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
 	Intents.FLAGS.DIRECT_MESSAGES
 );
 
@@ -86,12 +94,12 @@ client.on('ready', () => {
 		VALUES (@userDiscordID, @avatarID, @reuploadedAvatarURL)`
 	);
 
-	console.log('EarBot Ready!');
+	console.log(loginMessage);
 });
 
 client.on('messageCreate', async message => {
 
-	if (message.author.id == 660290238412881930) return; // Ignore self.
+	if (message.author.bot) return; 
 
 	const vaultChannelData = client.getVaultID.get();//Get vault channel;
 	const guildID = "660306459397193728";//Guild ID for Objective Hub
@@ -124,8 +132,6 @@ client.on('messageCreate', async message => {
 			let noImageAttachments = UtilityFunctions.FilterImages(message.attachments);
 
 			//Send it!
-			
-
 			await vaultChannel.send({embeds: [embed], files: noImageAttachments});
 
 			//Nofity
@@ -158,5 +164,7 @@ client.on('messageCreate', async message => {
 		message.reply('There was an error trying to execute that command!');
 	}
 });
+
+
 
 client.login(token);
