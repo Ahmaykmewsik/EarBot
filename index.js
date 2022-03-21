@@ -9,13 +9,13 @@ let isTurboEarBot = false;
 //Toggle this to launch turbo instance
 // isTurboEarBot = true;
 
-const token = (isTurboEarBot) ? 
+const token = (isTurboEarBot) ?
 	process.env.tokenTurboEarBot : process.env.tokenEarBot;
 
-const prefix = (isTurboEarBot) ? 
+const prefix = (isTurboEarBot) ?
 	process.env.prefixTurbo : process.env.prefix;
 
-const loginMessage = (isTurboEarBot) ? 
+const loginMessage = (isTurboEarBot) ?
 	"TurboEarbot Ready!" : "EarBot Ready!";
 
 const { Client, Intents } = require('discord.js');
@@ -47,7 +47,7 @@ for (const file of commandFiles) {
 }
 
 client.on('ready', () => {
-	
+
 	const table = sql.prepare("SELECT count(*) FROM sqlite_master WHERE type='table' AND name = 'vaultID';").get();
 	if (!table['count(*)']) {
 		//Reuploaded avatar URL database
@@ -99,7 +99,7 @@ client.on('ready', () => {
 
 client.on('messageCreate', async message => {
 
-	if (message.author.bot) return; 
+	if (message.author.bot) return;
 
 	const vaultChannelData = client.getVaultID.get();//Get vault channel;
 	const guildID = "660306459397193728";//Guild ID for Objective Hub
@@ -113,12 +113,17 @@ client.on('messageCreate', async message => {
 
 		try {
 			//Color in the hub server
-			const user = await client.guilds.cache.get(guildID).members.fetch(message.author);
-			var color = user.displayHexColor;
+			let color;
+			try {
+				let user = await client.guilds.cache.get(guildID).members.fetch(message.author);
+				color = user.displayHexColor;
+			} catch {
+				//Don't so anything special if they're not in the hub server. It shouldn't be a requirement!
+			}
 
 			let vaultChannel = client.channels.cache.get(vaultChannelData.vaultID);
 
-			let avatarURL = await UtilityFunctions.GetStoredUserURL(client, message, user.id, vaultChannel.guild);
+			let avatarURL = await UtilityFunctions.GetStoredUserURL(client, message, message.author.id, vaultChannel.guild);
 
 			let imageURL = (message.attachments.size) ? message.attachments.first().url : "";
 
@@ -132,7 +137,7 @@ client.on('messageCreate', async message => {
 			let noImageAttachments = UtilityFunctions.FilterImages(message.attachments);
 
 			//Send it!
-			await vaultChannel.send({embeds: [embed], files: noImageAttachments});
+			await vaultChannel.send({ embeds: [embed], files: noImageAttachments });
 
 			//Nofity
 			let msg = await message.author.send(`*Sent to vault in **${vaultChannel.guild.name}***`);
