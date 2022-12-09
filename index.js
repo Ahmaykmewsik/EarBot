@@ -6,15 +6,17 @@ require('dotenv').config();
 
 //const { prefix, token } = require('./config.json');
 
-
 // const token = process.env.tokenEarBot;
 // const prefix = process.env.prefixEar;
 
 // const token = process.env.tokenQueerBot;
 // const prefix = process.env.prefixQueer;
 
-const token = process.env.tokenFearBot;
-const prefix = process.env.prefixFear;
+// const token = process.env.tokenFearBot;
+// const prefix = process.env.prefixFear;
+
+const token = process.env.tokenTesterBot;
+const prefix = process.env.prefixTester;
 
 const { Client, Intents } = require('discord.js');
 
@@ -116,8 +118,7 @@ client.on('messageCreate', async message => {
 
 	if (message.author.bot) return;
 
-	const vaultChannelData = client.getVaultID.get();//Get vault channel;
-	const guildID = "660306459397193728";//Guild ID for Objective Hub
+	const vaultChannelData = client.getVaultID.get();
 
 	///DM VAULT---------------------------------------------------------------------------
 
@@ -129,11 +130,12 @@ client.on('messageCreate', async message => {
 		try {
 			//Color in the hub server
 			let color;
-			try {
-				let user = await client.guilds.cache.get(guildID).members.fetch(message.author);
-				color = user.displayHexColor;
-			} catch {
-				//Don't so anything special if they're not in the hub server. It shouldn't be a requirement!
+			let guild = client.guilds.cache.get("660306459397193728");
+			if (guild)
+			{
+				let user = await guild.members.fetch(message.author);
+				if (user)
+					color = user.displayHexColor;
 			}
 
 			let vaultChannel = client.channels.cache.get(vaultChannelData.vaultID);
