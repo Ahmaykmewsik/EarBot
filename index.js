@@ -1,22 +1,20 @@
 const fs = require('fs');
 const Discord = require('discord.js');
 const Attachment = require('discord.js');
+const cron = require('node-cron');
 require('dotenv').config();
 
 //const { prefix, token } = require('./config.json');
 
-let isTurboEarBot = false;
-//Toggle this to launch turbo instance
-// isTurboEarBot = true;
 
-const token = (isTurboEarBot) ?
-	process.env.tokenTurboEarBot : process.env.tokenEarBot;
+// const token = process.env.tokenEarBot;
+// const prefix = process.env.prefixEar;
 
-const prefix = (isTurboEarBot) ?
-	process.env.prefixTurbo : process.env.prefix;
+// const token = process.env.tokenQueerBot;
+// const prefix = process.env.prefixQueer;
 
-const loginMessage = (isTurboEarBot) ?
-	"TurboEarbot Ready!" : "EarBot Ready!";
+const token = process.env.tokenFearBot;
+const prefix = process.env.prefixFear;
 
 const { Client, Intents } = require('discord.js');
 
@@ -94,6 +92,23 @@ client.on('ready', () => {
 		VALUES (@userDiscordID, @avatarID, @reuploadedAvatarURL)`
 	);
 
+	let loginMessage;
+
+	switch (client.user.username) {
+		case "EarBot":
+			loginMessage = "EarBot Ready!";
+			break;
+		case "QueerBot":
+			loginMessage = "QueerBot Slaying!";
+			break;
+		case "FearBot":
+			loginMessage = "FearBot is a Scardy!";
+			break;
+		default:
+			loginMessage = "Who the hell is ready?"
+			break;
+	}
+
 	console.log(loginMessage);
 });
 
@@ -170,6 +185,17 @@ client.on('messageCreate', async message => {
 	}
 });
 
+
+cron.schedule('*/9 * * * *', async () => {
+
+	const vaultChannelData = client.getVaultID.get();//Get vault channel;
+	let vaultChannel = client.channels.cache.get(vaultChannelData.vaultID);
+
+	if (vaultChannel) {
+		client.user.setActivity(vaultChannel.guild.name, { type: 'LISTENING' });
+	}
+
+});
 
 
 client.login(token);

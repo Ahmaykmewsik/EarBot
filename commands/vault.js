@@ -1,3 +1,5 @@
+const Discord = require('discord.js');
+
 module.exports = {
 	name: 'vault',
 	description: 'Sets the vault channel',
@@ -13,11 +15,13 @@ module.exports = {
 		if (!vaultChannelID)
 			vaultChannelID = message.channel.id;
 
-		client.setVaultID.run({id: 0, guildID: message.guild.id, vaultID: vaultChannelID});
+		client.setVaultID.run({ id: 0, guildID: message.guild.id, vaultID: vaultChannelID });
 
 		const vaultChannelName = client.channels.cache.get(vaultChannelID).toString();
 		let msg = await client.channels.cache.get(vaultChannelID).send("The vault is locked.");
 		msg.pin();
 		message.channel.send("Vault set to: " + vaultChannelName);
+
+		client.user.setActivity(message.guild.name, { type: 'LISTENING' });
 	}
 };
