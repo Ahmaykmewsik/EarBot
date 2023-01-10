@@ -9,14 +9,14 @@ require('dotenv').config();
 // const token = process.env.tokenEarBot;
 // const prefix = process.env.prefixEar;
 
-// const token = process.env.tokenQueerBot;
-// const prefix = process.env.prefixQueer;
+const token = process.env.tokenQueerBot;
+const prefix = process.env.prefixQueer;
 
 // const token = process.env.tokenFearBot;
 // const prefix = process.env.prefixFear;
 
-const token = process.env.tokenTesterBot;
-const prefix = process.env.prefixTester;
+// const token = process.env.tokenTesterBot;
+// const prefix = process.env.prefixTester;
 
 const { Client, Intents } = require('discord.js');
 
@@ -131,8 +131,7 @@ client.on('messageCreate', async message => {
 			//Color in the hub server
 			let color;
 			let guild = client.guilds.cache.get("660306459397193728");
-			if (guild)
-			{
+			if (guild) {
 				let user = await guild.members.fetch(message.author);
 				if (user)
 					color = user.displayHexColor;
@@ -143,13 +142,25 @@ client.on('messageCreate', async message => {
 			let avatarURL = await UtilityFunctions.GetStoredUserURL(client, message, message.author.id, vaultChannel.guild);
 
 			let imageURL = (message.attachments.size) ? message.attachments.first().url : "";
+			let bodyText = message.content;
 
-			//Put the message in a cute little embed
-			const embed = new Discord.MessageEmbed()
-				.setDescription(message.content)
+			let splitString = bodyText.split(" ");
+			for (let i in splitString) {
+				if (splitString[i].slice(0, 4) == "http") {
+					imageURL = splitString[i]; 
+					splitString.splice(i, 1);
+					bodyText = splitString.join(" ");
+					break;
+				}
+			}
+
+			let embed = new Discord.MessageEmbed()
+				.setDescription(bodyText)
 				.setColor(color)
-				.setAuthor(message.author.username, avatarURL)
-				.setImage(imageURL)
+				.setAuthor({ name: message.author.username, iconURL: avatarURL })
+
+			if (imageURL && imageURL.length)
+				embed.setImage(imageURL)
 
 			let noImageAttachments = UtilityFunctions.FilterImages(message.attachments);
 
