@@ -6,11 +6,11 @@ require('dotenv').config();
 
 //const { prefix, token } = require('./config.json');
 
-// const token = process.env.tokenEarBot;
-// const prefix = process.env.prefixEar;
+const token = process.env.tokenEarBot;
+const prefix = process.env.prefixEar;
 
-const token = process.env.tokenQueerBot;
-const prefix = process.env.prefixQueer;
+// const token = process.env.tokenQueerBot;
+// const prefix = process.env.prefixQueer;
 
 // const token = process.env.tokenFearBot;
 // const prefix = process.env.prefixFear;
@@ -139,38 +139,46 @@ client.on('messageCreate', async message => {
 
 			let vaultChannel = client.channels.cache.get(vaultChannelData.vaultID);
 
-			let avatarURL = await UtilityFunctions.GetStoredUserURL(client, message, message.author.id, vaultChannel.guild);
+			if (vaultChannel) {
+				let avatarURL = await UtilityFunctions.GetStoredUserURL(client, message, message.author.id, vaultChannel.guild);
 
-			let imageURL = (message.attachments.size) ? message.attachments.first().url : "";
-			let bodyText = message.content;
+				let imageURL = (message.attachments.size) ? message.attachments.first().url : "";
+				let bodyText = message.content;
+				let outsideEmbedText = "";
 
-			let splitString = bodyText.split(" ");
-			for (let i in splitString) {
-				if (splitString[i].slice(0, 4) == "http") {
-					imageURL = splitString[i]; 
-					splitString.splice(i, 1);
-					bodyText = splitString.join(" ");
-					break;
+				let splitString = bodyText.split(" ");
+				for (let i in splitString) {
+					if (splitString[i].slice(0, 4) == "http") {
+						outsideEmbedText = splitString[i];
+						splitString.splice(i, 1);
+						bodyText = splitString.join(" ");
+						break;
+					}
 				}
+
+				let embed = new Discord.MessageEmbed()
+					.setDescription(bodyText)
+					.setColor(color)
+					.setAuthor({ name: message.author.username, iconURL: avatarURL })
+
+				if (imageURL && imageURL.length)
+					embed.setImage(imageURL)
+
+				let noImageAttachments = Array.from(UtilityFunctions.FilterImages(message.attachments).values());
+
+				//Send it!
+				await vaultChannel.send({ embeds: [embed], files: noImageAttachments });
+				if (outsideEmbedText.length)
+					await vaultChannel.send({ content: outsideEmbedText });
+
+				//Nofity
+				let msg = await message.author.send(`*Sent to vault in **${vaultChannel.guild.name}***`);
+				await UtilityFunctions.sleep(5000);
+				await msg.delete();
 			}
-
-			let embed = new Discord.MessageEmbed()
-				.setDescription(bodyText)
-				.setColor(color)
-				.setAuthor({ name: message.author.username, iconURL: avatarURL })
-
-			if (imageURL && imageURL.length)
-				embed.setImage(imageURL)
-
-			let noImageAttachments = UtilityFunctions.FilterImages(message.attachments);
-
-			//Send it!
-			await vaultChannel.send({ embeds: [embed], files: noImageAttachments });
-
-			//Nofity
-			let msg = await message.author.send(`*Sent to vault in **${vaultChannel.guild.name}***`);
-			await UtilityFunctions.sleep(5000);
-			await msg.delete();
+			else {
+				return message.author.send(`This earbot is not set to a vault channel! Someone needs to get their shit together.`);
+			}
 		}
 		catch (error) {
 			console.error(error);
