@@ -15,11 +15,18 @@ module.exports = {
 		if (!vaultChannelID)
 			vaultChannelID = message.channel.id;
 
-		client.setVaultID.run({ id: 0, guildID: message.guild.id, vaultID: vaultChannelID });
+		let vaultChannelData = {
+			botUserID: client.user.id,
+			guildID: message.guild.id,
+			vaultID: vaultChannelID
+		}
+		client.setVaultID.run(vaultChannelData);
 
-		const vaultChannelName = client.channels.cache.get(vaultChannelID).toString();
+		let vaultChannelName = client.channels.cache.get(vaultChannelID).toString();
+		
 		let msg = await client.channels.cache.get(vaultChannelID).send("The vault is locked.");
 		msg.pin();
+
 		message.channel.send("Vault set to: " + vaultChannelName);
 
 		client.user.setActivity(message.guild.name, { type: 'LISTENING' });

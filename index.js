@@ -6,8 +6,8 @@ require('dotenv').config();
 
 //const { prefix, token } = require('./config.json');
 
-const token = process.env.tokenEarBot;
-const prefix = process.env.prefixEar;
+// const token = process.env.tokenEarBot;
+// const prefix = process.env.prefixEar;
 
 // const token = process.env.tokenQueerBot;
 // const prefix = process.env.prefixQueer;
@@ -31,192 +31,240 @@ myIntents.add(
 	Intents.FLAGS.DIRECT_MESSAGES
 );
 
-let client = new Client({ intents: myIntents, partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
-client.commands = new Discord.Collection();
+let bots = [
 
-const SQLite = require("better-sqlite3");
-const UtilityFunctions = require('./UtilityFunctions');
-const sql = new SQLite('./data.sqlite');
+	// {
+	// 	token: process.env.tokenTesterBot,
+	// 	prefix: process.env.prefixTester
+	// },
 
-//Commands
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+	{
+		token: process.env.tokenEarBot,
+		prefix: process.env.prefixEar,
+	},
+	{
+		token: process.env.tokenQueerBot,
+		prefix: process.env.prefixQueer,
+	},
+	{
+		token: process.env.tokenFearBot,
+		prefix: process.env.prefixFear
+	},
+	{
+		token: process.env.tokenGearBot,
+		prefix: process.env.prefixGear,
+	},
+];
 
-for (const file of commandFiles) {
-	const command = require(`./commands/${file}`);
-	client.commands.set(command.name, command);
+for (let bot of bots) {
+	bot.client = new Client({ intents: myIntents, partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
 }
 
-client.on('ready', () => {
+for (let bot of bots) {
 
-	const table = sql.prepare("SELECT count(*) FROM sqlite_master WHERE type='table' AND name = 'vaultID';").get();
-	if (!table['count(*)']) {
-		//Reuploaded avatar URL database
+	let client = bot.client;
 
-		sql.prepare(
-			`CREATE TABLE vaultID(
-				id INT PRIMARY KEY,
-				guildID TEXT,
-				vaultID TEXT
-			)`
-		).run();
+	client.commands = new Discord.Collection();
 
-		sql.prepare(
-			`CREATE TABLE avatarURLDatabase(
-				userDiscordID TEXT PRIMARY KEY,
-				avatarID TEXT,
-				reuploadedAvatarURL TEXT
-			)`
-		).run();
+	const SQLite = require("better-sqlite3");
+	const UtilityFunctions = require('./UtilityFunctions');
+	const sql = new SQLite('./data.sqlite');
 
-		sql.pragma("synchronous = 1");
-		sql.pragma("journal_mode = wal");
+	//Commands
+	const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
-		console.log("Completed First Time SQL Setup");
-
+	for (const file of commandFiles) {
+		const command = require(`./commands/${file}`);
+		client.commands.set(command.name, command);
 	}
 
-	client.getVaultID = sql.prepare(
-		`SELECT * from vaultID WHERE id = 0`
-	);
+	client.on('ready', () => {
 
-	client.setVaultID = sql.prepare(
-		`INSERT OR REPLACE INTO vaultID (id, guildID, vaultID)
-		VALUES (@id, @guildID, @vaultID)`
-	);
+		const table = sql.prepare("SELECT count(*) FROM sqlite_master WHERE type='table' AND name = 'vaultID';").get();
+		if (!table['count(*)']) {
 
-	client.getAvatar = sql.prepare(
-		`SELECT * FROM avatarURLDatabase
-		WHERE userDiscordID = ?`
-	);
+			sql.prepare(
+				`CREATE TABLE vaultID(
+					botUserID TEXT PRIMARY KEY,
+					guildID TEXT,
+					vaultID TEXT
+			)`
+			).run();
 
-	client.setAvatar = sql.prepare(
-		`INSERT OR REPLACE INTO avatarURLDatabase (userDiscordID, avatarID, reuploadedAvatarURL)
-		VALUES (@userDiscordID, @avatarID, @reuploadedAvatarURL)`
-	);
+			sql.prepare(
+				`CREATE TABLE avatarURLDatabase(
+					id INTEGER PRIMARY KEY,
+					userDiscordID TEXT,
+					guildID TEXT,
+					avatarID TEXT,
+					reuploadedAvatarURL TEXT
+			)`
+			).run();
 
-	let loginMessage;
+			sql.pragma("synchronous = 1");
+			sql.pragma("journal_mode = wal");
 
-	switch (client.user.username) {
-		case "EarBot":
-			loginMessage = "EarBot Ready!";
-			break;
-		case "QueerBot":
-			loginMessage = "QueerBot Slaying!";
-			break;
-		case "FearBot":
-			loginMessage = "FearBot is a Scardy!";
-			break;
-		default:
-			loginMessage = "Who the hell is ready?"
-			break;
-	}
+			console.log("Completed First Time SQL Setup");
 
-	console.log(loginMessage);
-});
+		}
 
-client.on('messageCreate', async message => {
+		client.getVaultID = sql.prepare(
+			`SELECT * from vaultID WHERE botUserID = ?`
+		);
 
-	if (message.author.bot) return;
+		client.setVaultID = sql.prepare(
+			`INSERT OR REPLACE INTO vaultID (botUserID, guildID, vaultID)
+		VALUES (@botUserID, @guildID, @vaultID)`
+		);
 
-	const vaultChannelData = client.getVaultID.get();
+		client.getDefaultAvatar = sql.prepare(
+			`SELECT * FROM avatarURLDatabase
+		WHERE userDiscordID = ? AND guildID = 'DEFAULT'`
+		);
 
-	///DM VAULT---------------------------------------------------------------------------
+		client.getGuildAvatar = sql.prepare(
+			`SELECT * FROM avatarURLDatabase
+		WHERE userDiscordID = ? AND guildID = ? `
+		);
 
-	if (message.channel.type === "DM" && !vaultChannelData)
-		return message.author.send(":x: The GM needs to setup the vault channel.");
+		client.setAvatar = sql.prepare(
+			`INSERT OR REPLACE INTO avatarURLDatabase(userDiscordID, guildID, avatarID, reuploadedAvatarURL)
+		VALUES(@userDiscordID, @guildID, @avatarID, @reuploadedAvatarURL)`
+		);
 
-	if (message.channel.type === "DM" && vaultChannelData) {
+		let loginMessage;
 
-		try {
-			//Color in the hub server
-			let color;
-			let guild = client.guilds.cache.get("660306459397193728");
-			if (guild) {
-				let user = await guild.members.fetch(message.author);
-				if (user)
-					color = user.displayHexColor;
-			}
+		switch (client.user.username) {
+			case "TesterBot":
+				loginMessage = "Testerbot is Testing!";
+				break;
+			case "EarBot":
+				loginMessage = "EarBot Ready!";
+				break;
+			case "QueerBot":
+				loginMessage = "QueerBot Slaying!";
+				break;
+			case "FearBot":
+				loginMessage = "FearBot is a Scardy!";
+				break;
+			case "GearBot":
+				loginMessage = "Gearbot is Turning!";
+				break;
+			default:
+				loginMessage = "Who the hell is ready?????"
+				break;
+		}
 
-			let vaultChannel = client.channels.cache.get(vaultChannelData.vaultID);
+		console.log(loginMessage);
+	});
 
-			if (vaultChannel) {
-				let avatarURL = await UtilityFunctions.GetStoredUserURL(client, message, message.author.id, vaultChannel.guild);
+	client.on('messageCreate', async message => {
 
-				let imageURL = (message.attachments.size) ? message.attachments.first().url : "";
-				let bodyText = message.content;
-				let outsideEmbedText = "";
+		if (message.author.bot) return;
 
-				let splitString = bodyText.split(" ");
-				for (let i in splitString) {
-					if (splitString[i].slice(0, 4) == "http") {
-						outsideEmbedText = splitString[i];
-						splitString.splice(i, 1);
-						bodyText = splitString.join(" ");
-						break;
-					}
+		let vaultChannelData = client.getVaultID.get(client.user.id);
+
+		///DM VAULT---------------------------------------------------------------------------
+
+		if (message.channel.type === "DM" && !vaultChannelData)
+			return message.author.send(":x: The GM needs to setup the vault channel.");
+
+		if (message.channel.type === "DM" && vaultChannelData) {
+
+			try {
+				//Color in the hub server
+				let color;
+				let guild = client.guilds.cache.get("660306459397193728");
+				if (guild) {
+					let user = await guild.members.fetch(message.author);
+					if (user)
+						color = user.displayHexColor;
 				}
 
-				let embed = new Discord.MessageEmbed()
-					.setDescription(bodyText)
-					.setColor(color)
-					.setAuthor({ name: message.author.username, iconURL: avatarURL })
+				let vaultChannel = client.channels.cache.get(vaultChannelData.vaultID);
 
-				if (imageURL && imageURL.length)
-					embed.setImage(imageURL)
+				if (vaultChannel) {
+					let avatarURL = await UtilityFunctions.GetStoredUserURL(client, message, message.author.id, vaultChannel.guild);
 
-				let noImageAttachments = Array.from(UtilityFunctions.FilterImages(message.attachments).values());
+					let imageURL = (message.attachments.size) ? message.attachments.first().url : "";
+					let bodyText = message.content;
+					let outsideEmbedText = "";
 
-				//Send it!
-				await vaultChannel.send({ embeds: [embed], files: noImageAttachments });
-				if (outsideEmbedText.length)
-					await vaultChannel.send({ content: outsideEmbedText });
+					let splitString = bodyText.split(" ");
+					for (let i in splitString) {
+						if (splitString[i].slice(0, 4) == "http") {
+							outsideEmbedText = splitString[i];
+							splitString.splice(i, 1);
+							bodyText = splitString.join(" ");
+							break;
+						}
+					}
 
-				//Nofity
-				let msg = await message.author.send(`*Sent to vault in **${vaultChannel.guild.name}***`);
-				await UtilityFunctions.sleep(5000);
-				await msg.delete();
+					let embed = new Discord.MessageEmbed()
+						.setDescription(bodyText)
+						.setColor(color)
+						.setAuthor({ name: message.author.username, iconURL: avatarURL })
+
+					if (imageURL && imageURL.length)
+						embed.setImage(imageURL)
+
+					let noImageAttachments = Array.from(UtilityFunctions.FilterImages(message.attachments).values());
+
+					//Send it!
+					await vaultChannel.send({ embeds: [embed], files: noImageAttachments });
+					if (outsideEmbedText.length)
+						await vaultChannel.send({ content: outsideEmbedText });
+
+					//Nofity
+					let msg = await message.author.send(`*Sent to vault in **${vaultChannel.guild.name}*** `);
+					await UtilityFunctions.sleep(2000);
+					await msg.delete();
+				}
+				else {
+					return message.author.send(`This earbot is not set to a vault channel! Someone needs to get their shit together.`);
+				}
 			}
-			else {
-				return message.author.send(`This earbot is not set to a vault channel! Someone needs to get their shit together.`);
+			catch (error) {
+				console.error(error);
+				return message.author.send(`Huh ? Something went wrong with that! Contact your GM or Ahmayk.\`\`\`${error}\`\`\``);
 			}
+		}
+
+		///COMMANDS ---------------------------------------------------------------------------
+		if (!message.content.startsWith(bot.prefix) || message.author.bot) return;
+
+		const args = message.content.slice(bot.prefix.length).split(/ +/);
+		const commandName = args.shift().toLowerCase();
+
+		const command = client.commands.get(commandName)
+			|| client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
+
+		if (!command) return;
+
+		try {
+			command.execute(client, message, args);
 		}
 		catch (error) {
 			console.error(error);
-			return message.author.send(`Huh? Something went wrong with that! Contact your GM or Ahmayk. \`\`\`${error}\`\`\``);
+			message.reply('There was an error trying to execute that command!');
 		}
-	}
+	});
 
-	///COMMANDS ---------------------------------------------------------------------------
-	if (!message.content.startsWith(prefix) || message.author.bot) return;
-
-	const args = message.content.slice(prefix.length).split(/ +/);
-	const commandName = args.shift().toLowerCase();
-
-	const command = client.commands.get(commandName)
-		|| client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
-
-	if (!command) return;
-
-	try {
-		command.execute(client, message, args);
-	}
-	catch (error) {
-		console.error(error);
-		message.reply('There was an error trying to execute that command!');
-	}
-});
+	client.login(bot.token);
+}
 
 
 cron.schedule('*/9 * * * *', async () => {
 
-	const vaultChannelData = client.getVaultID.get();//Get vault channel;
-	let vaultChannel = client.channels.cache.get(vaultChannelData.vaultID);
+	for (let bot of bots) {
 
-	if (vaultChannel) {
-		client.user.setActivity(vaultChannel.guild.name, { type: 'LISTENING' });
+		let client = bot.client;
+
+		let vaultChannelData = client.getVaultID.get();
+		let vaultChannel = client.channels.cache.get(vaultChannelData.vaultID);
+
+		if (vaultChannel)
+			client.user.setActivity(vaultChannel.guild.name, { type: 'LISTENING' });
 	}
 
 });
-
-
-client.login(token);
