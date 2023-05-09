@@ -268,17 +268,19 @@ for (let bot of bots) {
 }
 
 
-cron.schedule('*/9 * * * *', async () => {
+// cron.schedule('*/9 * * * *', async () => {
+cron.schedule('* * * * *', async () => {
 
 	for (let bot of bots) {
 
 		let client = bot.client;
 
-		let vaultChannelData = client.getVaultID.get();
-		let vaultChannel = client.channels.cache.get(vaultChannelData.vaultID);
-
-		if (vaultChannel)
-			client.user.setActivity(vaultChannel.guild.name, { type: 'LISTENING' });
+		let vaultChannelData = client.getVaultID.get(client.user.id);
+		if (vaultChannelData) {
+			let vaultChannel = client.channels.cache.get(vaultChannelData.vaultID);
+			if (vaultChannel)
+				client.user.setActivity(vaultChannel.guild.name, { type: 'LISTENING' });
+		}
 	}
 
 });
