@@ -54,6 +54,14 @@ let bots = [
 		token: process.env.tokenGearBot,
 		prefix: process.env.prefixGear,
 	},
+	{
+		token: process.env.tokenCareerBot,
+		prefix: process.env.prefixCareer,
+	},
+	{
+		token: process.env.tokenBeerBot,
+		prefix: process.env.prefixBeer,
+	},
 ];
 
 for (let bot of bots) {
@@ -149,6 +157,12 @@ for (let bot of bots) {
 				break;
 			case "GearBot":
 				loginMessage = "Gearbot is Turning!";
+				break;
+			case "CareerBot":
+				loginMessage = "CareerBot is Capitalisming!";
+				break;
+			case "BeerBot":
+				loginMessage = "BeerBot is adulting!";
 				break;
 			default:
 				loginMessage = "Who the hell is ready?????"
