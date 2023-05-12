@@ -33,35 +33,35 @@ myIntents.add(
 
 let bots = [
 
-	// {
-	// 	token: process.env.tokenTesterBot,
-	// 	prefix: process.env.prefixTester
-	// },
+	{
+		token: process.env.tokenTesterBot,
+		prefix: process.env.prefixTester
+	},
 
-	{
-		token: process.env.tokenEarBot,
-		prefix: process.env.prefixEar,
-	},
-	{
-		token: process.env.tokenQueerBot,
-		prefix: process.env.prefixQueer,
-	},
-	{
-		token: process.env.tokenFearBot,
-		prefix: process.env.prefixFear
-	},
-	{
-		token: process.env.tokenGearBot,
-		prefix: process.env.prefixGear,
-	},
-	{
-		token: process.env.tokenCareerBot,
-		prefix: process.env.prefixCareer,
-	},
-	{
-		token: process.env.tokenBeerBot,
-		prefix: process.env.prefixBeer,
-	},
+	// {
+	// 	token: process.env.tokenEarBot,
+	// 	prefix: process.env.prefixEar,
+	// },
+	// {
+	// 	token: process.env.tokenQueerBot,
+	// 	prefix: process.env.prefixQueer,
+	// },
+	// {
+	// 	token: process.env.tokenFearBot,
+	// 	prefix: process.env.prefixFear
+	// },
+	// {
+	// 	token: process.env.tokenGearBot,
+	// 	prefix: process.env.prefixGear,
+	// },
+	// {
+	// 	token: process.env.tokenCareerBot,
+	// 	prefix: process.env.prefixCareer,
+	// },
+	// {
+	// 	token: process.env.tokenBeerBot,
+	// 	prefix: process.env.prefixBeer,
+	// },
 ];
 
 for (let bot of bots) {
@@ -140,6 +140,10 @@ for (let bot of bots) {
 		VALUES(@userDiscordID, @guildID, @avatarID, @reuploadedAvatarURL)`
 		);
 
+		client.deleteAvatar = sql.prepare(
+			`DELETE FROM avatarURLDatabase WHERE id = ?`
+		);
+
 		let loginMessage;
 
 		switch (client.user.username) {
@@ -173,6 +177,10 @@ for (let bot of bots) {
 	});
 
 	client.on('messageCreate', async message => {
+
+		// for (let guild of client.guilds.cache) {
+		// 	console.dir(guild[1].name);
+		// }
 
 		if (message.author.bot) return;
 

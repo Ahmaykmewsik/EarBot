@@ -8,28 +8,42 @@ module.exports = {
 
         let result = "";
 
-        let defaultAvatarInfo = client.getDefaultAvatar.get(discordID);
-        let guildAvatarInfo = client.getGuildAvatar.get(discordID, earlogGuild.id) ;
+        let defaultAvatarInfos = client.getDefaultAvatar.all(discordID);
+        let guildAvatarInfos = client.getGuildAvatar.all(discordID, earlogGuild.id) ;
+
         let user = client.users.cache.get(discordID);
         let guildUser = earlogGuild.members.cache.get(discordID);
 
+        for (let avatarInfo of defaultAvatarInfos) {
+            if (avatarInfo.avatarID != user.avatar)
+                client.deleteAvatar.run(avatarInfo.id);
+        }
+        for (let avatarInfo of guildAvatarInfos) {
+            if (avatarInfo.avatarID != user.avatar && avatarInfo.guildID == earlogGuild.id)
+                client.deleteAvatar.run(avatarInfo.id);
+        }
+
         if (user && guildUser) {
-            if (guildUser.avatar && (!guildAvatarInfo|| guildAvatarInfo.avatarID != guildUser.avatar))
+
+            let matchingDefaultAvatarInfo = defaultAvatarInfos.find(a => a.avatarID == user.avatar);
+            let matchingGuildAvatarInfo = guildAvatarInfos.find(a => a.avatarID == guildUser.avatar);
+
+            if (guildUser.avatar && (!matchingGuildAvatarInfo))
                 result = this.UpdateStoredAvatarURL(client, message, guildUser, guildUser.guild.id);
 
-            else if (!guildUser.avatar && (!defaultAvatarInfo || defaultAvatarInfo.avatarID != user.avatar)) 
+            else if (!matchingDefaultAvatarInfo)
                 result = this.UpdateStoredAvatarURL(client, message, user, 'DEFAULT');
 
-            else if (guildAvatarInfo && guildUser.avatar == guildAvatarInfo.avatarID) {
-                result = guildAvatarInfo.reuploadedAvatarURL;
+            else if (matchingGuildAvatarInfo) {
+                result = matchingGuildAvatarInfo.reuploadedAvatarURL;
             }
-            else if (defaultAvatarInfo && user.avatar == defaultAvatarInfo.avatarID) {
-                result = defaultAvatarInfo.reuploadedAvatarURL;
+            else if (matchingDefaultAvatarInfo) {
+                result = matchingDefaultAvatarInfo.reuploadedAvatarURL;
             }
         }
 
         if (!result) {
-            result = message.author.defaultAvatarURL();
+            result = message.author.avatarURL();
         }
 
         return result;
