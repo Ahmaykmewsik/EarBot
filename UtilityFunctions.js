@@ -19,7 +19,7 @@ module.exports = {
                 client.deleteAvatar.run(avatarInfo.id);
         }
         for (let avatarInfo of guildAvatarInfos) {
-            if (avatarInfo.avatarID != user.avatar && avatarInfo.guildID == earlogGuild.id)
+            if (avatarInfo.avatarID != guildUser.avatar && avatarInfo.guildID == earlogGuild.id)
                 client.deleteAvatar.run(avatarInfo.id);
         }
 
