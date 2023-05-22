@@ -9,7 +9,7 @@ module.exports = {
         let result = "";
 
         let defaultAvatarInfos = client.getDefaultAvatar.all(discordID);
-        let guildAvatarInfos = client.getGuildAvatar.all(discordID, earlogGuild.id) ;
+        let guildAvatarInfos = client.getGuildAvatar.all(discordID, earlogGuild.id);
 
         let user = client.users.cache.get(discordID);
         let guildUser = earlogGuild.members.cache.get(discordID);
@@ -23,41 +23,35 @@ module.exports = {
                 client.deleteAvatar.run(avatarInfo.id);
         }
 
-        if (user && guildUser) {
+        let matchingDefaultAvatarInfo = user && defaultAvatarInfos.find(a => a.avatarID == user.avatar);
+        let matchingGuildAvatarInfo = guildUser && guildAvatarInfos.find(a => a.avatarID == guildUser.avatar);
 
-            let matchingDefaultAvatarInfo = defaultAvatarInfos.find(a => a.avatarID == user.avatar);
-            let matchingGuildAvatarInfo = guildAvatarInfos.find(a => a.avatarID == guildUser.avatar);
-
-            if (guildUser.avatar && (!matchingGuildAvatarInfo))
-                result = this.UpdateStoredAvatarURL(client, message, guildUser, guildUser.guild.id);
-
-            else if (!matchingDefaultAvatarInfo)
-                result = this.UpdateStoredAvatarURL(client, message, user, 'DEFAULT');
-
-            else if (matchingGuildAvatarInfo) {
-                result = matchingGuildAvatarInfo.reuploadedAvatarURL;
-            }
-            else if (matchingDefaultAvatarInfo) {
-                result = matchingDefaultAvatarInfo.reuploadedAvatarURL;
-            }
+        if (guildUser && guildUser.avatar) {
+            result = (matchingGuildAvatarInfo)
+                ? matchingGuildAvatarInfo.reuploadedAvatarURL
+                : await this.UpdateStoredAvatarURL(client, message, guildUser, guildUser.user.username, guildUser.guild.id);
+        }
+        else if (user) {
+            result = (matchingDefaultAvatarInfo)
+                ? matchingDefaultAvatarInfo.reuploadedAvatarURL
+                : await this.UpdateStoredAvatarURL(client, message, user, user.username, 'DEFAULT');
         }
 
-        if (!result) {
+        if (!result) 
             result = message.author.avatarURL();
-        }
 
         return result;
     },
 
     //Reuploads an image of a player's avatar as a message so that discord is forced to keep it :)
-    async UpdateStoredAvatarURL(client, message, user, guildID) {
+    async UpdateStoredAvatarURL(client, message, user, username, guildID) {
 
         const discordAvatarURL = await user.displayAvatarURL({ format: `webp`, size: 512 });
         const response = await fetch(discordAvatarURL);
         const arrayBuffer = await response.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
         const attachment = new Discord.MessageAttachment(buffer);
-        const avatarMessage = await message.channel.send({ content: `:desktop: NEW AVATAR FOR: ${user.username}`, files: [attachment] });
+        const avatarMessage = await message.channel.send({ content: `:desktop: NEW AVATAR FOR: ${username}`, files: [attachment] });
         const newURL = [...avatarMessage.attachments.values()][0].proxyURL;
 
         client.setAvatar.run({
