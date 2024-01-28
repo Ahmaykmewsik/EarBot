@@ -89,5 +89,44 @@ module.exports = {
         return new Promise(resolve => setTimeout(resolve, ms));
     },
 
+    //TODO: (Marc) Proper text splitting 
+    async SendToChannel(channel, text) {
+		return channel.send(text);
+    },
 
+    async Send(message, text) {
+		return message.channel.send(text);
+    },
+
+    async GetInputFromUser(message, promptMessage, { timeout = 60000, returnMessage = false, dm = false } = {}) {
+
+        let channel = message.channel;
+
+        if (promptMessage.length)
+        {
+            if (dm)
+            {
+                channel = await message.author.createDM();
+                await this.SendToChannel(channel, promptMessage);
+            }
+            else
+                await this.Send(message, promptMessage);
+        }
+
+        // let filter = m => !m.author.bot && (m.author.id == message.author.id);
+        //TODO: Watch out if having the bot being able to listen to itself is bad (I don't think it is?)
+
+        let filter = m => (m.author.id == message.author.id);
+        let inputMessage = await channel.awaitMessages({ filter, max: 1, time: timeout });
+
+        inputMessage = inputMessage.first();
+        if (!inputMessage || !inputMessage.content) {
+            this.SendToChannel(channel, `:clock1: ...hello? You still there? *(Confirmation aborted after timeout of ${timeout * 0.001} seconds)*`)
+            return null;
+        }
+
+        if (returnMessage) return inputMessage;
+
+        return inputMessage.content;
+    },
 }
