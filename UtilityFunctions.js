@@ -90,12 +90,17 @@ module.exports = {
     },
 
     //TODO: (Marc) Proper text splitting 
-    async SendToChannel(channel, text) {
-		return channel.send(text);
+    async SendToChannel(channel, text, {embeds = []} = []) {
+        let messageOptions = { embeds: embeds };
+
+        if (text && text.length)
+            messageOptions.content = text;
+
+        await channel.send(messageOptions);
     },
 
-    async Send(message, text) {
-		return message.channel.send(text);
+    async Send(message, text, {embeds = []} = {}) {
+		return this.SendToChannel (message.channel, text, {embeds: embeds});
     },
 
     async GetInputFromUser(message, promptMessage, { timeout = 60000, returnMessage = false, dm = false } = {}) {
@@ -129,4 +134,56 @@ module.exports = {
 
         return inputMessage.content;
     },
+
+    ProcessNumberedInput(message, choiceIndex, numFieldEntries)
+    {
+        let result = null;
+
+        choiceIndex = choiceIndex.toLowerCase();
+
+        if (choiceIndex == 'y' || choiceIndex == 'yes')
+            this.Send(message, ":question: This isn't a yes or no kind of situation, buddy. (Aborted)");
+
+        else if (choiceIndex == 'n' || choiceIndex == 'no')
+            this.Send(message, "Got it. (Canceled)");
+
+        else {
+            choiceIndex = parseInt(choiceIndex);
+            if (isNaN(choiceIndex))
+                this.Send(message, ":question: ...what? I don't know what that means. (Aborting)");
+
+            else if (choiceIndex > numFieldEntries || choiceIndex < 1)
+                this.Send(message, `:x: Invalid number ${choiceIndex}. That isn't a choice. (Aborting)`);
+
+            else
+                result = choiceIndex;
+        }
+
+        return result;
+    },
+
+    // CreateEmbedsFromOptions(options, { titleInput = "CHOOSE A NUMBER" } = {}) {
+    //     let embeds = [];
+    //     let optionGroups = [];
+
+    //     while (options.length)
+    //         optionGroups.push(options.splice(0, 25));
+
+    //     for (let optionGroup in optionGroups) {
+
+    //         let embed = {
+    //             type: 'rich',
+    //             title: titleInput,
+    //             fields: [],
+    //         }
+
+    //         for (let option in optionGroup) {
+    //             embed.fields.push({name: option});
+    //         }
+
+    //         embeds.push(embed);
+    //     }
+
+    //     return embeds;
+    // },
 }
