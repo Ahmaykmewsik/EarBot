@@ -25,7 +25,13 @@ module.exports = {
 		let vaultChannelName = client.channels.cache.get(vaultChannelID).toString();
 		
 		let msg = await client.channels.cache.get(vaultChannelID).send("The vault is locked.");
-		msg.pin();
+
+		try {
+			await msg.pin();
+		}
+		catch {
+
+		}
 
 		message.channel.send("Vault set to: " + vaultChannelName);
 
