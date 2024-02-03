@@ -10,7 +10,7 @@ module.exports = {
 		let categories = SqlGetAll(client.sql, DATABASE.AWARD_CATEGORY);
 
 		let returnMessage = (categories.length)
-			? `__ALL AWARD CATEGORIES__\n- ${AWARD_CATEGORIES.join('\n- ')}`
+			? `__ALL AWARD CATEGORIES__\n- ${categories.map(c => c.categoryString).join('\n- ')}`
 			: `No Award Categories yet. Add one with \`!addcategory\``;
 
         UtilityFunctions.Send(message, returnMessage);
