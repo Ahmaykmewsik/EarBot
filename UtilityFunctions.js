@@ -103,6 +103,34 @@ module.exports = {
 		return this.SendToChannel (message.channel, text, {embeds: embeds});
     },
 
+    TruncateString(s, limit = 50) {
+        if (!s || s.length <= limit) return s;
+        if (s.length > limit) {
+            s = s.slice(0, limit - 3);
+            s = Discord.escapeMarkdown(s);
+            s += "...";
+        }
+        return s;
+    },
+
+    async ReplyErrorMessage(error, message, { warningMessage = undefined } = {}) {
+        console.error(error);
+        console.trace();
+
+        if (!error.stack) {
+            let errorOld = error;
+            error = new Error(error);
+            error.stack = errorOld;
+            error.message = errorOld;
+        }
+
+        if (!warningMessage)
+            warningMessage = `:warning::beetle: WARNING: Something went wrong in the bot just now. It's probably not your fault. Give this info to Ahmayk:`
+
+        let returnString = `${warningMessage}\`\`\`${error.message}\`\`\`\`\`\`${this.TruncateString(error.stack, 600)}\`\`\``;
+        this.SendToChannel(message.channel, returnString);
+    },
+
     async GetInputFromUser(message, promptMessage, { timeout = 60000, returnMessage = false, dm = false } = {}) {
 
         let channel = message.channel;
