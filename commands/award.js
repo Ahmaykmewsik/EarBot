@@ -1,21 +1,23 @@
-const { AWARD_CATEGORIES } = require("../Constants");
+const { AWARD_CATEGORIES, DATABASE } = require("../Constants");
 const UtilityFunctions = require("../UtilityFunctions");
+const { SqlGetAll } = require("../sqlFunctions");
 
 module.exports = {
 	name: 'award',
 	description: 'Submits a nomination for an award',
-	guildonly: true,
 	async execute(client, message, args) {
 
         if (!args.length)
-            UtilityFunctions.Send(message, `Input a category to nominate an award for! Use \`!categories\` to see a list of all categoires.`);
+            return UtilityFunctions.Send(message, `Input a category to nominate an award for! Use \`!categories\` to see a list of all categoires.`);
+
+        let categories = SqlGetAll(client.sql, DATABASE.AWARD_CATEGORY);
 
         let matchedCategories = []; 
 
-        for (let category of AWARD_CATEGORIES) {
+        for (let category of categories) {
             let valid = true;
             for (let arg of args) {
-                if (!category.toLowerCase().includes(arg.toLowerCase()))
+                if (!category.categoryString.toLowerCase().includes(arg.toLowerCase()))
                 {
                     valid = false;
                     break;
@@ -28,7 +30,7 @@ module.exports = {
         let returnMessage = ``;
 
         if (!matchedCategories.length) 
-            UtilityFunctions.Send(message, `:question: Your input matched no categories. Use \`!categories\` to see a list of all categoires.`);
+            return UtilityFunctions.Send(message, `:question: Your input matched no categories. Use \`!categories\` to see all categoires.`);
 
         let category;
 
@@ -38,7 +40,7 @@ module.exports = {
         if (matchedCategories.length > 1) 
         {
             for (let i = 0; i < matchedCategories.length; i++) {
-                returnMessage += `${i + 1}. *${matchedCategories[i]}*\n`;
+                returnMessage += `${i + 1}. *${matchedCategories.categoryString[i]}*\n`;
             }
 
             returnMessage += `Your input matches multiple categories. Which one would you like? Choose a number.`;
@@ -52,7 +54,7 @@ module.exports = {
             category = matchedCategories[choiceIndex - 1];
         }
 
-        returnMessage = `Let's nominate **${category}** then!`;
+        returnMessage = `Let's nominate **${category.categoryString}** then!`;
 
         UtilityFunctions.Send(message, returnMessage);
     }

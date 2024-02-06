@@ -1,7 +1,8 @@
-const { AWARD_CATEGORIES, DATABASE } = require("../Constants");
+const { AWARD_CATEGORIES, DATABASE, OPTIONS } = require("../Constants");
 const UtilityFunctions = require("../UtilityFunctions");
 const sqlFunctions = require("../sqlFunctions");
 const { SqlGetAll } = require("../sqlFunctions");
+const Discord = require('discord.js');
 
 module.exports = {
 	name: 'addcategory',
@@ -16,15 +17,38 @@ module.exports = {
 		let category = {
 			id: null,
 			categoryString: args.join(" "),
+			optionsFlag: 0,
 		}
 
 		if (categories.some(c => c.categoryString.toLowerCase() == category.categoryString.toLowerCase())) 
 			return UtilityFunctions.Send(message, ":x: A category already exists with that name");
 
+		let buttons = []; 
+
+		let confirmID = "Confirm";
+		
+		buttons.push(new Discord.ButtonBuilder()
+                .setCustomId(OPTIONS.OPTION_GAME)
+                .setLabel("Game")
+                .setStyle(Discord.ButtonStyle.Primary));
+		buttons.push(new Discord.ButtonBuilder()
+                .setCustomId(OPTIONS.OPTION_CHARACTER)
+                .setLabel("Character")
+                .setStyle(Discord.ButtonStyle.Primary));
+		buttons.push(new Discord.ButtonBuilder()
+                .setCustomId(OPTIONS.OPTION_PERSON)
+                .setLabel("Person")
+                .setStyle(Discord.ButtonStyle.Primary));
+		buttons.push(new Discord.ButtonBuilder()
+                .setCustomId(confirmID)
+                .setLabel("Confirm")
+                .setStyle(Discord.ButtonStyle.Success));
+        let rows = new Discord.ActionRowBuilder().addComponents(buttons);
+
 		sqlFunctions.SqlSet(client.sql, message, DATABASE.AWARD_CATEGORY, category);
 
-		let returnFunction = `Category Added!`;
+		let returnMessage = `Category Added! Here are some buttons.`;
 
-        UtilityFunctions.Send(message, 'Category added!');
+        UtilityFunctions.Send(message, returnMessage, {components: rows});
 	}
 };

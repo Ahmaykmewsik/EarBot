@@ -90,8 +90,9 @@ module.exports = {
     },
 
     //TODO: (Marc) Proper text splitting 
-    async SendToChannel(channel, text, {embeds = []} = []) {
-        let messageOptions = { embeds: embeds };
+    async SendToChannel(channel, text, {embeds = [], components = []} = []) {
+
+        let messageOptions = { embeds: embeds, components: components };
 
         if (text && text.length)
             messageOptions.content = text;
@@ -99,8 +100,8 @@ module.exports = {
         await channel.send(messageOptions);
     },
 
-    async Send(message, text, {embeds = []} = {}) {
-		return this.SendToChannel (message.channel, text, {embeds: embeds});
+    async Send(message, text, {embeds = [], components = []} = {}) {
+		return this.SendToChannel (message.channel, text, {embeds: embeds, components: components});
     },
 
     TruncateString(s, limit = 50) {
