@@ -198,7 +198,7 @@ for (let bot of bots) {
 				let color;
 				let guild = client.guilds.cache.get("660306459397193728");
 				if (guild) {
-					let user = await guild.members.fetch(message.author);
+					let user = await guild.members.cache.get(message.author);
 					if (user)
 						color = user.displayHexColor;
 				}
