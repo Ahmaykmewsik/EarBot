@@ -32,12 +32,10 @@ myIntents.add(
 );
 
 let bots = [
-
-	// {
-	// 	token: process.env.tokenTesterBot,
-	// 	prefix: process.env.prefixTester
-	// },
-
+	//  {
+	// 	 token: process.env.tokenTesterBot,
+	// 	 prefix: process.env.prefixTester
+	//  },
 	{
 		token: process.env.tokenEarBot,
 		prefix: process.env.prefixEar,
@@ -61,6 +59,10 @@ let bots = [
 	{
 		token: process.env.tokenBeerBot,
 		prefix: process.env.prefixBeer,
+	},
+	{
+		token: process.env.tokenModBot,
+		prefix: process.env.prefixMod,
 	},
 ];
 
@@ -166,7 +168,10 @@ for (let bot of bots) {
 				loginMessage = "CareerBot is Capitalisming!";
 				break;
 			case "BeerBot":
-				loginMessage = "BeerBot is adulting!";
+				loginMessage = "BeerBot is Adulting!";
+				break;
+			case "ModBot":
+				loginMessage = "Modbot is Moderating!";
 				break;
 			default:
 				loginMessage = "Who the hell is ready?????"
@@ -191,14 +196,16 @@ for (let bot of bots) {
 		if (message.channel.type === "DM" && !vaultChannelData)
 			return message.author.send(":x: The GM needs to setup the vault channel.");
 
+		let objective_hub_guild_id = "660306459397193728";
+		let objective_hub_guild = client.guilds.cache.get(objective_hub_guild_id);
+
 		if (message.channel.type === "DM" && vaultChannelData) {
 
 			try {
 				//Color in the hub server
 				let color;
-				let guild = client.guilds.cache.get("660306459397193728");
-				if (guild) {
-					let user = await guild.members.cache.get(message.author);
+				if (objective_hub_guild) {
+					let user = await objective_hub_guild.members.cache.get(message.author.id);
 					if (user)
 						color = user.displayHexColor;
 				}
@@ -206,8 +213,6 @@ for (let bot of bots) {
 				let vaultChannel = client.channels.cache.get(vaultChannelData.vaultID);
 
 				if (vaultChannel) {
-					let avatarURL = await UtilityFunctions.GetStoredUserURL(client, message, message.author.id, vaultChannel.guild);
-
 					let imageURL = (message.attachments.size) ? message.attachments.first().url : "";
 					let bodyText = message.content;
 					let outsideEmbedText = "";
@@ -224,22 +229,28 @@ for (let bot of bots) {
 
 					let embed = new Discord.MessageEmbed()
 						.setDescription(bodyText)
-						.setColor(color)
-						.setAuthor({ name: message.author.username, iconURL: avatarURL })
+
+					let returnMessage = `Sent anonymously to the Objective Hub moderator channel.`;
+					let waittime = 5000;
+					if (client.user.username != "ModBot") {
+						let avatarURL = await UtilityFunctions.GetStoredUserURL(client, message, message.author.id, vaultChannel.guild);
+						embed.setAuthor({ name: message.author.username, iconURL: avatarURL })
+						embed.setColor(color)
+						waittime = 2000;
+						returnMessage = `*Sent to vault in **${vaultChannel.guild.name}***`;
+					}
 
 					if (imageURL && imageURL.length)
 						embed.setImage(imageURL)
 
 					let noImageAttachments = Array.from(UtilityFunctions.FilterImages(message.attachments).values());
 
-					//Send it!
 					await vaultChannel.send({ embeds: [embed], files: noImageAttachments });
 					if (outsideEmbedText.length)
 						await vaultChannel.send({ content: outsideEmbedText });
 
-					//Nofity
-					let msg = await message.author.send(`*Sent to vault in **${vaultChannel.guild.name}*** `);
-					await UtilityFunctions.sleep(2000);
+					let msg = await message.author.send(returnMessage);
+					await UtilityFunctions.sleep(waittime);
 					await msg.delete();
 				}
 				else {
@@ -254,6 +265,13 @@ for (let bot of bots) {
 
 		///COMMANDS ---------------------------------------------------------------------------
 		if (!message.content.startsWith(bot.prefix) || message.author.bot) return;
+
+		if (client.user.username == "ModBot" &&
+			(!message.member.permissions.has(Discord.Permissions.FLAGS.ADMINISTRATOR) ||
+			  message.guild.id != objective_hub_guild_id)) {
+			message.channel.send("Modbot can only be configured by moderators in the Objective Hub.");
+			return;
+		}
 
 		const args = message.content.slice(bot.prefix.length).split(/ +/);
 		const commandName = args.shift().toLowerCase();
