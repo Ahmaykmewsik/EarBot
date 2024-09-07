@@ -73,7 +73,7 @@ for (let bot of bots) {
 function ResetIfInactive(client, vaultChannelData) {
 	//two weeks
 	let expireTime = 14 * 24 * 60 * 60 * 1000;
-	if (vaultChannelData.vaultID && vaultChannelData.lastPostTime + expireTime < Date.now()) {
+	if (vaultChannelData && vaultChannelData.vaultID && vaultChannelData.lastPostTime + expireTime < Date.now()) {
 		vaultChannelData.vaultID = null;
 		client.setVaultID.run(vaultChannelData);
 		client.user.setActivity('', { type: 'LISTENING' });
