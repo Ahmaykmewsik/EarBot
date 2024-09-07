@@ -266,7 +266,7 @@ for (let bot of bots) {
 					if (outsideEmbedText.length)
 						await vaultChannel.send({ content: outsideEmbedText });
 
-					vaultChannelData.vaultID = Date.now();
+					vaultChannelData.lastPostTime = Date.now();
 					client.setVaultID.run(vaultChannelData);
 
 					let msg = await message.author.send(returnMessage);
