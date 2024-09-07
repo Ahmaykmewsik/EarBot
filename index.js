@@ -70,6 +70,16 @@ for (let bot of bots) {
 	bot.client = new Client({ intents: myIntents, partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
 }
 
+function ResetIfInactive(client, vaultChannelData) {
+	//two weeks
+	let expireTime = 14 * 24 * 60 * 60 * 1000;
+	if (vaultChannelData.vaultID && vaultChannelData.lastPostTime + expireTime < Date.now()) {
+		vaultChannelData.vaultID = null;
+		client.setVaultID.run(vaultChannelData);
+		client.user.setActivity('', { type: 'LISTENING' });
+	}
+}
+
 for (let bot of bots) {
 
 	let client = bot.client;
@@ -97,7 +107,8 @@ for (let bot of bots) {
 				`CREATE TABLE vaultID(
 					botUserID TEXT PRIMARY KEY,
 					guildID TEXT,
-					vaultID TEXT
+					vaultID TEXT,
+					lastPostTime INTEGER
 			)`
 			).run();
 
@@ -123,8 +134,8 @@ for (let bot of bots) {
 		);
 
 		client.setVaultID = sql.prepare(
-			`INSERT OR REPLACE INTO vaultID (botUserID, guildID, vaultID)
-		VALUES (@botUserID, @guildID, @vaultID)`
+			`INSERT OR REPLACE INTO vaultID (botUserID, guildID, vaultID, lastPostTime)
+		VALUES (@botUserID, @guildID, @vaultID, @lastPostTime)`
 		);
 
 		client.getDefaultAvatar = sql.prepare(
@@ -189,19 +200,23 @@ for (let bot of bots) {
 
 		if (message.author.bot) return;
 
-		let vaultChannelData = client.getVaultID.get(client.user.id);
-
 		///DM VAULT---------------------------------------------------------------------------
-
-		if (message.channel.type === "DM" && !vaultChannelData)
-			return message.author.send(":x: The GM needs to setup the vault channel.");
 
 		let objective_hub_guild_id = "660306459397193728";
 		let objective_hub_guild = client.guilds.cache.get(objective_hub_guild_id);
 
-		if (message.channel.type === "DM" && vaultChannelData) {
+		if (message.channel.type === "DM") {
 
 			try {
+
+				let vaultChannelData = client.getVaultID.get(client.user.id);
+
+				if (!vaultChannelData)
+					message.author.send(":x: The GM needs to setup the vault channel.");
+
+				if (client.user.username != "ModBot")
+					ResetIfInactive(client, vaultChannelData);
+
 				//Color in the hub server
 				let color;
 				if (objective_hub_guild) {
@@ -210,7 +225,9 @@ for (let bot of bots) {
 						color = user.displayHexColor;
 				}
 
-				let vaultChannel = client.channels.cache.get(vaultChannelData.vaultID);
+				let vaultChannel = null;
+				if (vaultChannelData.vaultID)
+					vaultChannel = client.channels.cache.get(vaultChannelData.vaultID);
 
 				if (vaultChannel) {
 					let imageURL = (message.attachments.size) ? message.attachments.first().url : "";
@@ -249,6 +266,9 @@ for (let bot of bots) {
 					if (outsideEmbedText.length)
 						await vaultChannel.send({ content: outsideEmbedText });
 
+					vaultChannelData.vaultID = Date.now();
+					client.setVaultID.run(vaultChannelData);
+
 					let msg = await message.author.send(returnMessage);
 					await UtilityFunctions.sleep(waittime);
 					await msg.delete();
@@ -259,7 +279,7 @@ for (let bot of bots) {
 			}
 			catch (error) {
 				console.error(error);
-				return message.author.send(`Huh ? Something went wrong with that! Contact your GM or Ahmayk.\`\`\`${error}\`\`\``);
+				return message.author.send(`Huh? Something went wrong with that! Contact your GM or Ahmayk.\`\`\`${error}\`\`\``);
 			}
 		}
 
@@ -293,7 +313,6 @@ for (let bot of bots) {
 	client.login(bot.token);
 }
 
-
 // cron.schedule('*/9 * * * *', async () => {
 cron.schedule('* * * * *', async () => {
 
@@ -303,6 +322,10 @@ cron.schedule('* * * * *', async () => {
 
 		let vaultChannelData = client.getVaultID.get(client.user.id);
 		if (vaultChannelData) {
+
+			if (client.user.username != "ModBot")
+				ResetIfInactive(client, vaultChannelData);
+
 			let vaultChannel = client.channels.cache.get(vaultChannelData.vaultID);
 			if (vaultChannel)
 				client.user.setActivity(vaultChannel.guild.name, { type: 'LISTENING' });

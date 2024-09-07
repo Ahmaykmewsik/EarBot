@@ -18,7 +18,8 @@ module.exports = {
 		let vaultChannelData = {
 			botUserID: client.user.id,
 			guildID: message.guild.id,
-			vaultID: vaultChannelID
+			vaultID: vaultChannelID,
+			lastPostTime: Date.now(),
 		}
 		client.setVaultID.run(vaultChannelData);
 
