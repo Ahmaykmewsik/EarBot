@@ -212,7 +212,7 @@ for (let bot of bots) {
 				let vaultChannelData = client.getVaultID.get(client.user.id);
 
 				if (!vaultChannelData)
-					message.author.send(":x: The GM needs to setup the vault channel.");
+					return message.author.send(":x: The GM needs to setup the vault channel.");
 
 				if (client.user.username != "ModBot")
 					ResetIfInactive(client, vaultChannelData);
