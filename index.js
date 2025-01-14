@@ -71,8 +71,8 @@ for (let bot of bots) {
 }
 
 function ResetIfInactive(client, vaultChannelData) {
-	//two weeks
-	let expireTime = 14 * 24 * 60 * 60 * 1000;
+	//four weeks
+	let expireTime = 4 * 7 * 24 * 60 * 60 * 1000;
 	if (vaultChannelData && vaultChannelData.vaultID && vaultChannelData.lastPostTime + expireTime < Date.now()) {
 		vaultChannelData.vaultID = null;
 		client.setVaultID.run(vaultChannelData);
